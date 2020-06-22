@@ -6,5 +6,13 @@ import numpy as np
 # For Face Features, we are taking 5 time domain features for each of the face features.
 # There are 32 facial feature columns, so output of matrix size (n, 32*5) 
 def createFeatureMatrix(arr, windowSize, windowShift, dataType="eda"):
-    
+    # Create cumulative feature matrix
+    fm = np.zeros((0,5))
+    length = arr.shape[0]
+    for index in range(0, length, windowShift):
+        end = index + windowSize
+        if end > length:
+            end = length
+        getFeatures(arr[index])
+
     pass
