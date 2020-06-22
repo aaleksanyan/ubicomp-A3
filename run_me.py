@@ -27,14 +27,16 @@ for fileName in listdir('EDA_Data_csv'):
     else:
         label = 1
     path = 'EDA_Data_csv\\' + fileName
-    data = importFile(path)
-    featureMatrix = createFeatureMatrix(data, windowSize, windowShift)
-    height = featureMatrix.shape[0]
-    if(label):
-        labelCol = np.ones((height,1))
-    else:
-        labelCol = np.zeros((height,1))
-    featureMatrix = np.concatenate((featureMatrix, labelCol), axis=1)
-    edaFeatMatrix = np.concatenate((edaFeatMatrix, featureMatrix), axis=0)
+    data = importFile(path, linesToSkip=8)
+    print(data.shape, label)
+
+    # featureMatrix = createFeatureMatrix(data, windowSize, windowShift)
+    # height = featureMatrix.shape[0]
+    # if(label):
+    #     labelCol = np.ones((height,1))
+    # else:
+    #     labelCol = np.zeros((height,1))
+    # featureMatrix = np.concatenate((featureMatrix, labelCol), axis=1)
+    # edaFeatMatrix = np.concatenate((edaFeatMatrix, featureMatrix), axis=0)
 
 
