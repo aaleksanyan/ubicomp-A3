@@ -7,13 +7,13 @@ To run this project, use the following instructions.
 
 1. Ensure the project structure is as follows:
 
-| `run_me.py`
-| `featureExtract.py`
-| `importFile.py`
-| `Face_Features`
- \| a number of `.csv` data files. One containing "Rest" and one containing "Present" for each participant. 
-| `EDA_Data_csv`
- \| a number of `.csv` data files. One containing "Rest" and one containing "Present" for each participant. 
+- `run_me.py`
+- `featureExtract.py`
+- `importFile.py`
+- `Face_Features`
+- - a number of `.csv` data files. One containing "Rest" and one containing "Present" for each participant. 
+- `EDA_Data_csv`
+- - a number of `.csv` data files. One containing "Rest" and one containing "Present" for each participant. 
 
 2. Install Python libraries. You will need:
 - `numpy`
