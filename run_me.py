@@ -18,25 +18,34 @@ from featureExtract import createFeatureMatrix
 # - get feature matrix, windowing with windowSize and windowShift
 # - add column of "class" to side of matrix
 # - concat matrix to edaFeatureMatrix
-windowSize = 0
-windowShift = 0
+
+# EDA sampled at 16Hz
+
+windowSize = 160
+windowShift = 8
 edaFeatMatrix = np.zeros((0,7))
 for fileName in listdir('EDA_Data_csv'):
     if 'Rest' in fileName:
         label = 0
-    else:
+    else: # If it's a "Present"
         label = 1
     path = 'EDA_Data_csv\\' + fileName
     data = importFile(path, linesToSkip=8)
-    print(data.shape, label)
+    print("Data matrix shape:", data.shape, label)
 
-    # featureMatrix = createFeatureMatrix(data, windowSize, windowShift)
-    # height = featureMatrix.shape[0]
-    # if(label):
-    #     labelCol = np.ones((height,1))
-    # else:
-    #     labelCol = np.zeros((height,1))
-    # featureMatrix = np.concatenate((featureMatrix, labelCol), axis=1)
-    # edaFeatMatrix = np.concatenate((edaFeatMatrix, featureMatrix), axis=0)
+    # Create EDA feature matrix
+    # Add label column
+    # Add to total cumulative matrix
 
 
+    featureMatrix = createFeatureMatrix(data, windowSize, windowShift)
+    print("Resulting feature matrix shape:", featureMatrix.shape)
+    height = featureMatrix.shape[0]
+    if(label):
+        labelCol = np.ones((height,1))
+    else:
+        labelCol = np.zeros((height,1))
+    featureMatrix = np.concatenate((featureMatrix, labelCol), axis=1)
+    edaFeatMatrix = np.concatenate((edaFeatMatrix, featureMatrix), axis=0)
+
+print("Cumulative EDA Feature Matrix:", edaFeatMatrix.shape)
