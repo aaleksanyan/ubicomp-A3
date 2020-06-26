@@ -4,7 +4,7 @@ import numpy as np
 # Take in path and an optional argument of how many lines to skip in the beginning and parse to return a NumPy array populated with the data.
 # Also ensures that data is 'clean' - just regular float64 
 def importFile(filePath, linesToSkip=0):
-    print("Processing %s" %(filePath))
+    print("Processing %s..." %(filePath))
     dataCSV = open(filePath)
     if linesToSkip: # If it's >0
         skip = True # Set a flag to say keep reading lines
@@ -28,7 +28,7 @@ def importFile(filePath, linesToSkip=0):
             vals = vals.astype(np.float64)
             data.append(vals)
         except:
-            print("this line didn't parse:", vals)
+            print("Following line did not parse:", vals)
         line = dataCSV.readline()
 
     dataCSV.close()

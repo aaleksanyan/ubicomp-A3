@@ -10,24 +10,53 @@ from scipy.signal import find_peaks
 # There are 32 facial feature columns, so output of matrix size (n, 32*5) 
 def createFeatureMatrix(arr, windowSize, windowShift, dataType="eda"):
     
-    if dataType == 'eda':
-        # Initialize cumulative feature matrix
-        fm = np.zeros((0,6))
-        length = arr.shape[0]
-        # Start windowing
-        for index in range(0, length, windowShift):
-            end = index + windowSize
-            if end + 1 > length:
-                end = length - 1
-            if end-index == 0:
-                continue
-            feats = getFeatures(arr[index:end, -1].reshape(end-index,1), {'mean', 'max', 'min', 'slope', 'mph', 'numpeak'})
-            #print(feats.shape)
-            fm = np.concatenate((fm, feats.reshape(1,6)), axis=0)
+    # if dataType == 'eda':
+    #     # Initialize cumulative feature matrix
+    #     fm = np.zeros((0,6))
+    #     length = arr.shape[0]
+    #     # Start windowing
+    #     for index in range(0, length, windowShift):
+    #         end = index + windowSize
+    #         if end + 1 > length:
+    #             end = length - 1
+    #         if end-index == 0:
+    #             continue
+    #         feats = getFeatures(arr[index:end, -1].reshape(end-index,1), {'mean', 'max', 'min', 'slope', 'mph', 'numpeak'})
+    #         #print(feats.shape)
+    #         fm = np.concatenate((fm, feats.reshape(1,6)), axis=0)
         
-        return fm
+    #     return fm
+    
+    if dataType == 'face':
+        # Initialize cumulative feature matrix
+        fm = np.zeros((0,245))
+        features = {'std', 'slope', 'mean', 'median', 'max'}
+    elif dataType == 'eda':
+        # Initialize cumulative feature matrix        
+        fm = np.zeros((0,6))
+        features = {'mean', 'max', 'min', 'slope', 'mph', 'numpeak'}
+    else:
+        print('dataType arg was invalid, doofus:', dataType)
+        return np.zeros((1,1))
+    
+    length = arr.shape[0]
+    for index in range(0, length, windowShift):
+        end = index + windowSize
+        if end + 1 > length:
+            end = length - 1
+        if end-index == 0:
+            continue
+        
+        if dataType == 'face':
+            window = arr[index:end, 1:]
+        if dataType == 'eda':        
+            window = arr[index:end, -1].reshape(end-index,1)
+        featureRow = getFeatures(window, features)
+        fm = np.concatenate((fm, featureRow), axis=0)
 
-    print('dataType arg was invalid, doofus')
+    return fm
+
+
 
 # What would a dream getFeatures() function do, to fulfill our needs in the best way?
 # It needs to be able to take inputs of different sizes and return a row of features of predictable length.
@@ -40,7 +69,7 @@ def getFeatures(inp, feats):
     # For each column, we need to calculate all the features.
     for col in range(inp.shape[1]):
         data = inp[:,col]
-        if len(data) < 1:
+        if len(data) < 2:
             return np.zeros((1,len(feats)))
         # Mean, max, min, slope, mean peak height, num of peaks
         if 'mean' in feats:
@@ -50,17 +79,20 @@ def getFeatures(inp, feats):
                 mean = 0
                 print("Mean calculation error occured.", e)
             featureRow.append(mean)
+        if 'median' in feats:
+            featureRow.append(np.median(data))
         if 'max' in feats:
             featureRow.append(data.max())
         if 'min' in feats:
             featureRow.append(data.min())
         if 'slope' in feats:
             xvals = np.array(range(len(data))) 
+            np.seterr(all="raise")
             try:
                 slope, _, _, _, _ = stats.linregress(xvals, data)
             except:
                 slope = 0
-                print("Error calculating slope")
+                print("Error calculating slope on this data:", data)
             featureRow.append(slope)
         if 'mph' in feats or 'numpeak' in feats:
             # This is here so that we never have to repeat running "find_peaks" if it's needed for 'mph' and 'numpeak'
@@ -75,4 +107,6 @@ def getFeatures(inp, feats):
             featureRow.append(len(peaks))
         if 'std' in feats:
             featureRow.append(data.std())
-    return np.array(featureRow)
+    
+    # This just makes it a 2D, one row array
+    return np.array(featureRow).reshape((1, len(featureRow)))
