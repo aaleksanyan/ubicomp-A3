@@ -6,7 +6,7 @@ from featureExtract import createFeatureMatrix
 # Takes input of a dataType (either 'eda' or 'face')
 # Returns feature matrix created with all data files in corresponding folder.
 def processData(dataType='eda'):
-    if dataType=="eda":
+    if dataType=='eda':
         windowSize, windowShift = 160, 8 # 16Hz
         featureMatrix = np.zeros((0,7))
         # 1 point * 6 feats + 1 class label
@@ -23,7 +23,7 @@ def processData(dataType='eda'):
         return np.zeros((1,1))
 
     for fileName in listdir(folder):
-        # TODO: worth noting that if someone's name had "Rest" or "Present" in it, there could be issues... 
+        # TODO: worth noting - if someone's name had "Rest" or "Present" in it, there could be issues... 
         if 'Rest' in fileName: # If it's a "Rest"
             label = 0
         else: # If it's a "Present"

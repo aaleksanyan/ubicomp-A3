@@ -3,11 +3,9 @@ from scipy import stats
 from scipy.signal import find_peaks
 
 
-# Takes in a np array, windowSize, and windowShift to return a feature matrix where every line is a window.
-# For EDA, we are just taking the last column and calculating features for that per window. 
-# This makes our feature matrix size (n, 6)
-# For Face Features, we are taking 5 time domain features for each of the face features.
-# There are 32 facial feature columns, so output of matrix size (n, 32*5) 
+# Takes in a np array, windowSize, windowShift, and dataType to return a feature matrix.
+# dataType = 'eda' -- calculating 6 features for the last column. Feature matrix size (n, 6)
+# dataType = 'face' -- calculating 5 features for each of 49 columns. Feature matrix size (n, 245)  
 def createFeatureMatrix(arr, windowSize, windowShift, dataType="eda"):
     
     # if dataType == 'eda':
@@ -27,42 +25,43 @@ def createFeatureMatrix(arr, windowSize, windowShift, dataType="eda"):
         
     #     return fm
     
+    # Initialize cumulative feature matrix. num cols * features
+    # Set features of interest
     if dataType == 'face':
-        # Initialize cumulative feature matrix
         fm = np.zeros((0,245))
         features = {'std', 'slope', 'mean', 'median', 'max'}
     elif dataType == 'eda':
-        # Initialize cumulative feature matrix        
         fm = np.zeros((0,6))
         features = {'mean', 'max', 'min', 'slope', 'mph', 'numpeak'}
     else:
         print('dataType arg was invalid, doofus:', dataType)
         return np.zeros((1,1))
-    
+
+    # Start windowing    
     length = arr.shape[0]
     for index in range(0, length, windowShift):
+        # Set endpoint in slice
         end = index + windowSize
         if end + 1 > length:
-            end = length - 1
+            end = length - 1 # TODO: Do I need the -1, +1?
         if end-index == 0:
             continue
         
         if dataType == 'face':
-            window = arr[index:end, 1:]
+            window = arr[index:end, 1:] # Shape is (n, 49)
         if dataType == 'eda':        
-            window = arr[index:end, -1].reshape(end-index,1)
+            window = arr[index:end, -1].reshape(end-index,1) # Makes it (n, 1) instead of (n, ). A one-col slice just outputs a 1D row vector, but getFeatures wants 2D.
         featureRow = getFeatures(window, features)
         fm = np.concatenate((fm, featureRow), axis=0)
 
     return fm
 
 
-
-# What would a dream getFeatures() function do, to fulfill our needs in the best way?
-# It needs to be able to take inputs of different sizes and return a row of features of predictable length.
-# It would also be good to specify exactly what features we want.
-# So, it takes in a np.array matrix, and calculates all the specified features for each column.
-# With an input of one column and five features, you would receieve a row vector of length five. (1,5) or (5,)
+# Takes as input 2D np.array matrix and one set of features. Calculates each feature for each column.
+# With an input of one column and five features, you would receive a row vector of length five - (1,5)
+# With an input of 3 columns and four features, you would receive a row vector of length twelve - (1,12)
+# Possible args for features: 'mean', 'median', 'max', 'min', 'slope', 'mph' (mean peak height), 'numpeak' (number of peaks), 'std' (standard deviation)
+# The resulting row vector will always be in the above order column by column. [c1-mean, c1-min, c1-mph, c2-mean, c2-min, c2-mph]
 def getFeatures(inp, feats):
     featureRow = [] # Initialize where we accumulate features.
     
@@ -71,7 +70,8 @@ def getFeatures(inp, feats):
         data = inp[:,col]
         if len(data) < 2:
             return np.zeros((1,len(feats)))
-        # Mean, max, min, slope, mean peak height, num of peaks
+        # Since sets are O(1) membership checks, they're the optimal DS. But, they may not stay in order.
+        # Therefore, this code will always output row features in this order.
         if 'mean' in feats:
             try:
                 mean = data.mean()
@@ -103,10 +103,10 @@ def getFeatures(inp, feats):
             else:
                 mph = 0
             featureRow.append(mph)
-        if 'numpeak' in feats:
+        if 'numpeak' in feats: # Number of peaks
             featureRow.append(len(peaks))
-        if 'std' in feats:
+        if 'std' in feats: # Standard deviation
             featureRow.append(data.std())
     
-    # This just makes it a 2D, one row array
+    # This just makes it a 2D array instead of a 1D array. (f*c, ) -> (1, f*c)
     return np.array(featureRow).reshape((1, len(featureRow)))
