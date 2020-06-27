@@ -5,7 +5,7 @@ The purpose of this project is to attempt to classify between calm and stressed 
 
 To run this project, use the following instructions.
 
-1. Ensure the project structure is as follows:
+**1. Ensure the project structure is as follows:**
 
 - `run_me.py`
 - `featureExtract.py`
@@ -15,5 +15,9 @@ To run this project, use the following instructions.
 - `EDA_Data_csv`
 - - a number of `.csv` data files. One containing "Rest" and one containing "Present" for each participant. 
 
-2. Install Python libraries. You will need:
+**2. Install Python libraries. You will need:**
 - `numpy`
+- `sklearn`, including `scipy` 
+
+**3. Run `run_me.py` from the root directory.**
+
