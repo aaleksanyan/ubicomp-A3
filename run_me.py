@@ -77,9 +77,11 @@ def processData(dataType='eda'):
         
 #     return edaFeatMatrix
 
-#########################
-#***********************#
-#########################
+#############################
+#******functions above******#
+#*********`~.***********`~.*#
+#****`~. main below `~.*****#
+#############################
 
 edaMatrix = processData(dataType='eda')
 faceMatrix = processData(dataType='face')
