@@ -108,5 +108,5 @@ def getFeatures(inp, feats):
         if 'std' in feats: # Standard deviation
             featureRow.append(data.std())
     
-    # This just makes it a 2D array instead of a 1D array. (f*c, ) -> (1, f*c)
+    # This makes featureRow a 2D array instead of a 1D array. (f*c, ) -> (1, f*c)
     return np.array(featureRow).reshape((1, len(featureRow)))
