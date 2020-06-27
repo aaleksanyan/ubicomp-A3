@@ -17,3 +17,7 @@ To run this project, use the following instructions.
 
 2. Install Python libraries. You will need:
 - `numpy`
+- `sklearn`, including `scipy` 
+
+3. Run `run_me.py` from the root directory.
+
