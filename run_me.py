@@ -88,3 +88,9 @@ faceMatrix = processData(dataType='face')
 
 print("Cumulative EDA Feature Matrix:", edaMatrix.shape)
 print("Cumulative Face Feature Matrix:", faceMatrix.shape)
+
+# Feature matricies constructed! Next step:
+# Rank features individually based on performance metric, such as F score with a binary classifier.
+# Use 70% for training and 30% for testing.
+# Create bar plot to show F score (y axis) and feature (x axis)
+# Use this plot to ascertain the most important feature.
