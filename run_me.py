@@ -2,6 +2,9 @@ from os import listdir
 import numpy as np
 from importFile import importFile
 from featureExtract import createFeatureMatrix
+from sklearn.linear_model import LogisticRegression as logr
+from sklearn.metrics import f1_score as f1
+import matplotlib.pyplot as plt
 
 # Takes input of a dataType (either 'eda' or 'face')
 # Returns feature matrix created with all data files in corresponding folder.
@@ -77,6 +80,17 @@ def processData(dataType='eda'):
         
 #     return edaFeatMatrix
 
+# Take in a numpy array and a percentage
+# Return a tuple of the array shuffled and split by that percentage
+def shuffleAndSplit(arr, percent):
+    if percent > 100 or percent < 0:
+        return arr
+    np.random.shuffle(arr)
+    splitPoint = round(len(arr) * (0.01 * percent))  
+    arr1 = arr[0:splitPoint, :]
+    arr2 = arr[splitPoint:, :]
+    return arr1, arr2
+
 #############################
 #******functions above******#
 #*********`~.***********`~.*#
@@ -94,3 +108,40 @@ print("Cumulative Face Feature Matrix:", faceMatrix.shape)
 # Use 70% for training and 30% for testing.
 # Create bar plot to show F score (y axis) and feature (x axis)
 # Use this plot to ascertain the most important feature.
+
+# Task 3 -- Ascertain the best single feature
+# For each feature column in eda:
+fscores = []
+names = []
+
+labelCol = edaMatrix[:, -1].reshape(-1, 1) # Slice returns 1D row vector
+for col in range(edaMatrix.shape[1] - 1):
+    featCol = edaMatrix[:, 0].reshape(-1, 1) # Slice returns 1D row vector
+    oneFeature = np.concatenate((featCol, labelCol), axis=1) # (n,1)*2=(n,2)
+    training, test = shuffleAndSplit(oneFeature, 70) 
+    model = logr().fit(training[:, :-1].reshape(-1,1), training[:, -1]) # 2D X, 1D y
+    y = test[:, -1]
+    yhat = model.predict(test[:, :-1].reshape(-1,1)) # Predict wants 2D x. Returns 1D y
+    fscore = f1(y, yhat)
+    names.append("EDAcol" + str(col))
+    fscores.append(fscore)
+
+labelCol = faceMatrix[:, -1].reshape(-1, 1) # Slice returns 1D row vector
+for col in range(faceMatrix.shape[1] - 1):
+    featCol = faceMatrix[:, 0].reshape(-1, 1) # Slice returns 1D row vector
+    oneFeature = np.concatenate((featCol, labelCol), axis=1) # (n,1)*2=(n,2)
+    training, test = shuffleAndSplit(oneFeature, 70) 
+    model = logr().fit(training[:, :-1].reshape(-1,1), training[:, -1]) # 2D X, 1D y
+    y = test[:, -1]
+    yhat = model.predict(test[:, :-1].reshape(-1,1)) # Predict wants 2D x. Returns 1D y
+    fscore = f1(y, yhat)
+    names.append("Facecol" + str(col))
+    fscores.append(fscore)    
+
+print(fscores)
+ypos = np.arange(len(names))
+plt.bar(ypos, fscores, align='center', alpha=0.5)
+plt.xticks(ypos, names)
+plt.ylabel('fscore')
+plt.show()
+    
