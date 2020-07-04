@@ -3,6 +3,7 @@ import numpy as np
 from importFile import importFile
 from featureExtract import createFeatureMatrix
 from sklearn.linear_model import LogisticRegression as logr
+from sklearn.tree import DecisionTreeClassifier as dtc
 from sklearn.metrics import f1_score as f1
 import matplotlib.pyplot as plt
 
@@ -91,16 +92,30 @@ def shuffleAndSplit(arr, percent):
     arr2 = arr[splitPoint:, :]
     return arr1, arr2
 
+def topX(data, labels, num):
+    topData = []
+    topLabels = []
+    count = 0
+    while count < num:
+        index = data.argmax(axis=0)
+        topData.append(data[index])
+        topLabels.append(labels[index])
+        data = np.delete(data, index)
+        labels = np.delete(labels, index)
+        count += 1
+
+    return topData, topLabels
+
 #############################
 #******functions above******#
 #*********`~.***********`~.*#
 #****`~. main below `~.*****#
 #############################
 
-edaMatrix = processData(dataType='eda')
+#edaMatrix = processData(dataType='eda')
 faceMatrix = processData(dataType='face')
 
-print("Cumulative EDA Feature Matrix:", edaMatrix.shape)
+#print("Cumulative EDA Feature Matrix:", edaMatrix.shape)
 print("Cumulative Face Feature Matrix:", faceMatrix.shape)
 
 # Feature matricies constructed! Next step:
@@ -114,34 +129,42 @@ print("Cumulative Face Feature Matrix:", faceMatrix.shape)
 fscores = []
 names = []
 
-labelCol = edaMatrix[:, -1].reshape(-1, 1) # Slice returns 1D row vector
-for col in range(edaMatrix.shape[1] - 1):
-    featCol = edaMatrix[:, 0].reshape(-1, 1) # Slice returns 1D row vector
-    oneFeature = np.concatenate((featCol, labelCol), axis=1) # (n,1)*2=(n,2)
-    training, test = shuffleAndSplit(oneFeature, 70) 
-    model = logr().fit(training[:, :-1].reshape(-1,1), training[:, -1]) # 2D X, 1D y
-    y = test[:, -1]
-    yhat = model.predict(test[:, :-1].reshape(-1,1)) # Predict wants 2D x. Returns 1D y
-    fscore = f1(y, yhat)
-    names.append("EDAcol" + str(col))
-    fscores.append(fscore)
+training, test = shuffleAndSplit(faceMatrix, 70) 
+model = dtc(max_depth=1).fit(training[:, :-1], training[:, -1])
+yhat = model.predict(test[:, :-1])
+y = test[:, -1]
+print("Most important feat: ", np.where(model.feature_importances_== 1.0))
+
+# labelCol = edaMatrix[:, -1].reshape(-1, 1) # Slice returns 1D row vector
+# for col in range(edaMatrix.shape[1] - 1):
+#     featCol = edaMatrix[:, col].reshape(-1, 1) # Slice returns 1D row vector
+#     oneFeature = np.concatenate((featCol, labelCol), axis=1) # (n,1)*2=(n,2)
+#     training, test = shuffleAndSplit(oneFeature, 70) 
+#     model = logr(max_iter=10000).fit(training[:, :-1].reshape(-1,1), training[:, -1]) # 2D X, 1D y
+#     y = test[:, -1]
+#     yhat = model.predict(test[:, :-1].reshape(-1,1)) # Predict wants 2D x. Returns 1D y
+#     fscore = f1(y, yhat)
+#     names.append("EDAcol" + str(col))
+#     fscores.append(fscore)
 
 labelCol = faceMatrix[:, -1].reshape(-1, 1) # Slice returns 1D row vector
 for col in range(faceMatrix.shape[1] - 1):
-    featCol = faceMatrix[:, 0].reshape(-1, 1) # Slice returns 1D row vector
+    featCol = faceMatrix[:, col].reshape(-1, 1) # Slice returns 1D row vector
     oneFeature = np.concatenate((featCol, labelCol), axis=1) # (n,1)*2=(n,2)
     training, test = shuffleAndSplit(oneFeature, 70) 
-    model = logr().fit(training[:, :-1].reshape(-1,1), training[:, -1]) # 2D X, 1D y
+    model = dtc(max_depth=1).fit(training[:, :-1].reshape(-1,1), training[:, -1]) # 2D X, 1D y
     y = test[:, -1]
     yhat = model.predict(test[:, :-1].reshape(-1,1)) # Predict wants 2D x. Returns 1D y
     fscore = f1(y, yhat)
     names.append("Facecol" + str(col))
-    fscores.append(fscore)    
+    fscores.append(fscore)
 
-print(fscores)
-ypos = np.arange(len(names))
-plt.bar(ypos, fscores, align='center', alpha=0.5)
-plt.xticks(ypos, names)
+topFscore, topLabel = topX(np.array(fscores), names, 10)
+
+#print(fscores)
+ypos = np.arange(len(topLabel))
+plt.bar(ypos, topFscore, align='center', alpha=0.5)
+plt.xticks(ypos, topLabel)
 plt.ylabel('fscore')
 plt.show()
-    
+
